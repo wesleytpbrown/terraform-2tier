@@ -120,7 +120,7 @@ resource "aws_route_table_association" "Terraform2tier-NGW-rta" {
 resource "aws_instance" "terraform2tier-server" {
   ami                    = "ami-04b4f1a9cf54c11d0"
   instance_type          = "t2.micro"
-  key_name               = "dockerkey" 
+  key_name               = "dockerkey"
   vpc_security_group_ids = [aws_security_group.terraform2tier_sg.id]
   user_data              = file("apache2tier.sh")
 
@@ -141,7 +141,7 @@ resource "aws_security_group" "terraform2tier_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -162,15 +162,15 @@ resource "aws_security_group" "terraform2tier_sg" {
 
 #Create a RDS Database Instance
 resource "aws_db_instance" "terraform-mysql" {
-  allocated_storage    = 10
-  db_name              = "mydb"
-  engine               = "mysql"
-  engine_version       = "8.0"
-  instance_class       = "db.t3.micro"
-  username             = "admin"
-  password             = "terraform123"
-  parameter_group_name = "default.mysql8.0"
-  skip_final_snapshot  = true
+  allocated_storage      = 10
+  db_name                = "mydb"
+  engine                 = "mysql"
+  engine_version         = "8.0"
+  instance_class         = "db.t3.micro"
+  username               = "admin"
+  password               = "terraform123"
+  parameter_group_name   = "default.mysql8.0"
+  skip_final_snapshot    = true
   vpc_security_group_ids = [aws_security_group.terraform2tier_RDS_sg.id]
 }
 
@@ -185,7 +185,7 @@ resource "aws_security_group" "terraform2tier_RDS_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = [aws_subnet.PublicSub1.cidr_block, aws_sub.PublicSub2.cidr_block] 
+    cidr_blocks = ["10.0.1.0/24", "10.0.2.0/24"]
   }
 
   egress {
@@ -193,5 +193,5 @@ resource "aws_security_group" "terraform2tier_RDS_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  }
+  } 
 }
