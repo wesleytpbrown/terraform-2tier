@@ -158,3 +158,40 @@ resource "aws_security_group" "terraform2tier_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+
+#Create a RDS Database Instance
+resource "aws_db_instance" "terraform-mysql" {
+  allocated_storage    = 10
+  db_name              = "mydb"
+  engine               = "mysql"
+  engine_version       = "8.0"
+  instance_class       = "db.t3.micro"
+  username             = "admin"
+  password             = "terraform123"
+  parameter_group_name = "default.mysql8.0"
+  skip_final_snapshot  = true
+  vpc_security_group_ids = [aws_security_group.terraform2tier_RDS_sg.id]
+}
+
+
+#RDS SG
+resource "aws_security_group" "terraform2tier_RDS_sg" {
+  name        = "Terraform2tier_RDS-SG"
+  description = "Allow port 3306 traffic"
+
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.PublicSub1.cidr_block, aws_sub.PublicSub2.cidr_block] 
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
