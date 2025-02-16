@@ -113,7 +113,7 @@ resource "aws_route_table" "Terraform2tier-ngw" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.Terraform2tier-ngw.id
   }
 
@@ -135,12 +135,13 @@ resource "aws_route_table_association" "Terraform2tier-NGW-rta2" {
 
 #Create our EC2 Instance
 resource "aws_instance" "terraform2tier-server" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  key_name               = "dockerkey"
-  subnet_id              = aws_subnet.Public2Tier1.id
-  vpc_security_group_ids = [aws_security_group.terraform2tier_sg.id]
-  user_data              = file("apache2tier.sh")
+  ami                         = "ami-04b4f1a9cf54c11d0"
+  instance_type               = "t2.micro"
+  key_name                    = "dockerkey"
+  subnet_id                   = aws_subnet.Public2Tier1.id
+  associate_public_ip_address = true # Ensure public accessibility
+  vpc_security_group_ids      = [aws_security_group.terraform2tier_sg.id]
+  user_data                   = file("apache2tier.sh")
 
 
   tags = {
@@ -153,6 +154,7 @@ resource "aws_instance" "terraform2tier-server" {
 resource "aws_security_group" "terraform2tier_sg" {
   name        = "Terraform2tier-SG"
   description = "Allow SSH and port 80 traffic"
+  vpc_id      = aws_vpc.main.id
 
 
   ingress {
