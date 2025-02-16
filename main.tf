@@ -86,6 +86,12 @@ resource "aws_route_table_association" "Terraform2tier-rta" {
   route_table_id = aws_route_table.PublicRT.id
 }
 
+resource "aws_route_table_association" "Terraform2tier-rta2" {
+  subnet_id      = aws_subnet.Public2Tier2.id
+  route_table_id = aws_route_table.PublicRT.id
+}
+
+
 
 #Elastic IP
 resource "aws_eip" "eip" {
@@ -97,7 +103,7 @@ resource "aws_eip" "eip" {
 #Nat Gateway for Private Subnets
 resource "aws_nat_gateway" "Terraform2tier-ngw" {
   allocation_id = aws_eip.eip.id
-  subnet_id     = aws_subnet.Private2Tier1.id
+  subnet_id     = aws_subnet.Public2Tier1.id
   depends_on    = [aws_internet_gateway.igw]
 }
 
@@ -105,6 +111,11 @@ resource "aws_nat_gateway" "Terraform2tier-ngw" {
 #NAT gateway route Table
 resource "aws_route_table" "Terraform2tier-ngw" {
   vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.Terraform2tier-ngw.id
+  }
 
 }
 
@@ -115,12 +126,19 @@ resource "aws_route_table_association" "Terraform2tier-NGW-rta" {
   route_table_id = aws_route_table.Terraform2tier-ngw.id
 }
 
+resource "aws_route_table_association" "Terraform2tier-NGW-rta2" {
+  subnet_id      = aws_subnet.Private2Tier2.id
+  route_table_id = aws_route_table.Terraform2tier-ngw.id
+}
+
+
 
 #Create our EC2 Instance
 resource "aws_instance" "terraform2tier-server" {
   ami                    = "ami-04b4f1a9cf54c11d0"
   instance_type          = "t2.micro"
   key_name               = "dockerkey"
+  subnet_id              = aws_subnet.Public2Tier1.id
   vpc_security_group_ids = [aws_security_group.terraform2tier_sg.id]
   user_data              = file("apache2tier.sh")
 
@@ -193,5 +211,5 @@ resource "aws_security_group" "terraform2tier_RDS_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  } 
+  }
 }
